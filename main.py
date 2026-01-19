@@ -1,5 +1,5 @@
 import pygame as pg
-from map import *
+import map
 
 pg.init()
 
@@ -8,13 +8,18 @@ def main():
 
     window = pg.display
     window.set_mode((600 , 500))
+    surface = window.get_surface()
+
+    map.randomiseMap(16 , 16)
+    map.displayMap(surface)
 
     running = True
 
     while running:
 
-        segments.draw()
-        bombs.draw()
+        surface.fill((0 , 0 , 0))
+        
+        map.displayMap(surface)
 
         window.flip()
 
@@ -23,5 +28,9 @@ def main():
         events = pg.event.get()
 
         for event in events:
-            if event == pg.QUIT:
-                running = False    
+            if event.type == pg.QUIT:
+                running = False
+
+    return 0   
+
+exitCode = main() 

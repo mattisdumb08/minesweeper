@@ -72,7 +72,7 @@ def displayMap(surface : pg.surface.Surface):
 
     rows = len(worldMap)
     columns = len(worldMap[0])
-    sizeOfSurface = (1400 , 1000)
+    sizeOfSurface = surface.get_size()
 
     # widthOfSegment = sizeOfSurface / columns
     # heightOfSegment = sizeOfSurface / rows
@@ -90,9 +90,9 @@ def displayMap(surface : pg.surface.Surface):
         for columnIndex in range(0 , worldMap[rowIndex].__len__()):
 
             match worldMap[rowIndex][columnIndex]:
-                case 1:
+                case 0:
                     newSegment = Segment(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , segments)
-                case 3:
+                case 1:
                     newSegment = Bomb(widthOfSegment , heightOfSegment , (currentCenterx, currentCentery) , bombs)
 
             currentCenterx = currentCenterx + widthOfSegment + 1
@@ -101,6 +101,9 @@ def displayMap(surface : pg.surface.Surface):
             # print("c : " + str(columnIndex))
         currentCenterx = 0
         currentCentery = currentCentery + heightOfSegment + 1
+    
+    bombs.draw(surface)
+    segments.draw(surface)
 
 def defineMap(rows , columns):
 
@@ -120,4 +123,22 @@ def randomiseMap(rows , columns): # Uses dimensions
     for i in range(0 , rows):
         worldMap.append([])
         for number in range(0 , columns):
-            worldMap[i].append(rndm.randint(0 , 1))
+            worldMap[i].append(rndm.randint(0 , 2))
+    
+    print(worldMap)
+
+def checkBOOOOOOOOOOOOOOOOM(index : tuple):
+    total = 0
+
+    if worldMap[index[0] + 1][index[1]] == 1: # Middle Right
+        total += 1
+    if worldMap[index[0] + 1][index[1] + 1] == 1: # Top Right
+        total += 1
+    if worldMap[index[0]][index[1] + 1]: # Top Middle
+        total += 1
+    if worldMap[index[0] - 1][index[1] + 1]: # Top Left
+        total += 1
+    if worldMap[index[0] - 1][index[1]]: # Middle Left
+        total += 1
+    if worldMap[index[0] - 1][index[1]]:
+        total += 1
