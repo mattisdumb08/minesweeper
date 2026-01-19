@@ -34,6 +34,8 @@ class Segment(pg.sprite.Sprite):
         self.xCoord = newCenter[0]
         self.yCoord = newCenter[1]
 
+        self.bombNumber = 0
+
         self.add(groupToAdd)
 
     def getCenter(self):
@@ -140,5 +142,9 @@ def checkBOOOOOOOOOOOOOOOOM(index : tuple):
         total += 1
     if worldMap[index[0] - 1][index[1]]: # Middle Left
         total += 1
-    if worldMap[index[0] - 1][index[1]]:
+    if worldMap[index[0] - 1][index[1] - 1]: # Bottom Left 
+        total += 1
+    if worldMap[index[0]][index[1] - 1]: # Bottom Middle
+        total += 1
+    if worldMap[index[0] + 1][index[1] - 1]: # Bottom Right
         total += 1
