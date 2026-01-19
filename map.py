@@ -123,7 +123,7 @@ def randomiseMap(rows , columns): # Uses dimensions
     for i in range(0 , rows):
         worldMap.append([])
         for number in range(0 , columns):
-            worldMap[i].append(rndm.randint(0 , 2))
+            worldMap[i].append(rndm.randint(0 , 1))
     
     print(worldMap)
 
