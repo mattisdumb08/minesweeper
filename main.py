@@ -19,6 +19,8 @@ def main():
 
         surface.fill((0 , 0 , 0))
         
+        map.bombs.update()
+        map.tiles.update(surface)
         map.displayMap(surface)
 
         window.flip()
