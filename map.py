@@ -4,7 +4,7 @@ import random as rndm
 # Empty Space 0 - 8
 # Bomb -1
 
-worldMap=[
+worldMap = [
 
 [1 , 1 , 1 , 1 , 1 , 0 , 1 , 1 , 1 , 1 , 1 , 1],
 [1 , 0 , 0 , 1 , 1 , 0 , 0 , 0 , 0 , 1 , 1 , 1],
@@ -17,12 +17,12 @@ worldMap=[
 
 ]
 
-segments = pg.sprite.Group()
+tiles = pg.sprite.Group()
 bombs = pg.sprite.Group()
 
 class Segment(pg.sprite.Sprite):
 
-    def __init__(self , newWidth , newHeight , newCenter , groupToAdd):
+    def __init__(self , newWidth , newHeight , newCenter , groupToAdd , newIndex : tuple):
         pg.sprite.Sprite.__init__(self)
         self.width = newWidth
         self.height = newHeight
@@ -30,11 +30,12 @@ class Segment(pg.sprite.Sprite):
         self.image = pg.Surface((newWidth , newHeight) , pg.SRCCOLORKEY).convert()
         self.image.fill((255 , 255 , 255))
         self.rect = pg.rect.Rect(newCenter[0] , newCenter[1] , newWidth , newHeight)
+        self.index = newIndex
+
+        self.revealed = False
 
         self.xCoord = newCenter[0]
         self.yCoord = newCenter[1]
-
-        self.bombNumber = 0
 
         self.add(groupToAdd)
 
@@ -57,10 +58,35 @@ class Segment(pg.sprite.Sprite):
     def update(self):
         pass
 
+class Tile(Segment):
+
+    def _init(self , newWidth , newHeight , newCenter , groupToAdd , newIndex):
+        super.__init__(newWidth , newHeight , newCenter , groupToAdd , newIndex)
+
+        self.numberOfBombs = 0
+    
+    def update(self , surface : pg.surface.Surface):
+        
+        self.numberOfBombs = checkBombCount(self.index)
+
+        if self.revealed:
+            self.numberOnFace = pg.font.SysFont("arial" , 60)
+            
+            surfaceText = self.numberOnFace.render(str(self.numberOfBombs) , True ,  (200 , 200 , 200) , (0 , 0 , 0))
+
+            surfaceText.convert()
+            surface.blit(surfaceText , self.getCenter())
+            pg.display.flip()
+
+
 class Bomb(Segment):
-    def __init__(self, newWidth, newHeight, newCenter, groupToAdd):
-        super().__init__(newWidth, newHeight, newCenter, groupToAdd)
-        self.image.fill((30 , 0 , 0))
+    
+    def __init__(self, newWidth, newHeight, newCenter, groupToAdd , newIndex):
+        super().__init__(newWidth, newHeight, newCenter, groupToAdd , newIndex)
+
+        self.image.fill((255 , 255 , 255))
+
+        # self.image.fill((30 , 0 , 0))
 
 
 
@@ -69,7 +95,7 @@ columns = len(worldMap[0])
 
 def displayMap(surface : pg.surface.Surface):
 
-    segments.empty()
+    tiles.empty()
     bombs.empty()
 
     rows = len(worldMap)
@@ -93,9 +119,9 @@ def displayMap(surface : pg.surface.Surface):
 
             match worldMap[rowIndex][columnIndex]:
                 case 0:
-                    newSegment = Segment(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , segments)
+                    newSegment = Tile(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , tiles , (rowIndex , columnIndex))
                 case 1:
-                    newSegment = Bomb(widthOfSegment , heightOfSegment , (currentCenterx, currentCentery) , bombs)
+                    newSegment = Bomb(widthOfSegment , heightOfSegment , (currentCenterx, currentCentery) , bombs , (rowIndex , columnIndex))
 
             currentCenterx = currentCenterx + widthOfSegment + 1
             # print(segmentRect.center)
@@ -105,7 +131,7 @@ def displayMap(surface : pg.surface.Surface):
         currentCentery = currentCentery + heightOfSegment + 1
     
     bombs.draw(surface)
-    segments.draw(surface)
+    tiles.draw(surface)
 
 def defineMap(rows , columns):
 
@@ -129,22 +155,47 @@ def randomiseMap(rows , columns): # Uses dimensions
     
     print(worldMap)
 
-def checkBOOOOOOOOOOOOOOOOM(index : tuple):
+def checkBombCount(index : tuple):
+
+    topWallNull = False
+    bottomWallNull = False
+    leftWallNull = False
+    rightWallNull = False
+
+    if index[0] >= len(worldMap[0]): # Right Wall Null
+        rightWallNull = True
+    if index[0] == 0: # Left Wall Null
+        leftWallNull = True
+    if index[1] >= len(worldMap): # Bottom Wall Null
+        bottomWallNull = True
+    if index[1] == 0: # Top Wall Null
+        topWallNull = True
+
     total = 0
 
-    if worldMap[index[0] + 1][index[1]] == 1: # Middle Right
-        total += 1
-    if worldMap[index[0] + 1][index[1] + 1] == 1: # Top Right
-        total += 1
-    if worldMap[index[0]][index[1] + 1]: # Top Middle
-        total += 1
-    if worldMap[index[0] - 1][index[1] + 1]: # Top Left
-        total += 1
-    if worldMap[index[0] - 1][index[1]]: # Middle Left
-        total += 1
-    if worldMap[index[0] - 1][index[1] - 1]: # Bottom Left 
-        total += 1
-    if worldMap[index[0]][index[1] - 1]: # Bottom Middle
-        total += 1
-    if worldMap[index[0] + 1][index[1] - 1]: # Bottom Right
-        total += 1
+    if rightWallNull: # Middle Right
+        if worldMap[index[0] + 1][index[1]] == 1:
+            total += 1
+    if topWallNull and rightWallNull: # Top Right
+        if worldMap[index[0] + 1][index[1] + 1] == 1:
+            total += 1
+    if topWallNull: # Top Middle
+        if worldMap[index[0]][index[1] + 1]:
+            total += 1
+    if topWallNull and leftWallNull: # Top Left
+        if worldMap[index[0] - 1][index[1] + 1]:
+            total += 1
+    if leftWallNull: # Middle Left
+        if worldMap[index[0] - 1][index[1]]:
+            total += 1
+    if bottomWallNull and leftWallNull: # Bottom Left
+        if worldMap[index[0] - 1][index[1] - 1]:
+            total += 1
+    if bottomWallNull: # Bottom Middle
+         if worldMap[index[0]][index[1] - 1]:
+            total += 1
+    if bottomWallNull and rightWallNull: # Bottom Right
+         if worldMap[index[0] + 1][index[1] - 1]:
+            total += 1
+    
+    return total
