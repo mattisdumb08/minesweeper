@@ -5,8 +5,8 @@ pg.init()
 
 def main():
 
-
     window = pg.display
+    window.set_caption("Minesweeper")
     window.set_mode((600 , 500))
     surface = window.get_surface()
 
@@ -15,16 +15,12 @@ def main():
 
     running = True
 
-    leftPressed = False
-    rightPressed = False
-    middlePressed = False
-
     while running:
 
         surface.fill((0 , 0 , 0))
         
         map.displayMap(surface)
-        map.bombs.update()
+        map.bombs.update(surface)
         map.tiles.update(surface)
         window.flip()
 
@@ -48,6 +44,9 @@ def main():
                 if sprite.rect.collidepoint(location[0] , location[1]):
                     print(sprite.index)
                     map.revealMap[sprite.index[0]][sprite.index[1]] = True
+            for sprite in map.bombs:
+                if sprite.rect.collidepoint(location[0] , location[1]):
+                    map.revealMap[sprite.index[0]][sprite.index[1]] = 2
 
         match keys:
             case pg.K_RIGHT:

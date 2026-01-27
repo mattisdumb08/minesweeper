@@ -80,19 +80,21 @@ class Tile(Segment):
             text = pg.sysfont.SysFont("Serif" , 16 , True)
             image = text.render(str(self.numberOfBombs) , True , (0 , 200 , 0))
             imageRect = image.get_rect()
-            imageRect.center = (self.center[0] + self.getWidth() , self.center[1] + self.getHeight())
+            imageRect.center = (self.center[0] + (self.getWidth() / 2) , self.center[1] + (self.getHeight() / 2))
             image.convert()
             surface.blit(image , imageRect)
             
 class Bomb(Segment):
     
-    def __init__(self, newWidth, newHeight, newCenter, groupToAdd , newIndex):
+    def __init__(self, newWidth, newHeight, newCenter, groupToAdd , newIndex , newColour):
         super().__init__(newWidth, newHeight, newCenter, groupToAdd , newIndex)
 
-        # self.image.fill((255 , 255 , 255))
+        self.image.fill(newColour)
 
-        self.image.fill((30 , 0 , 0))
+    def update(self , surface : pg.surface.Surface):
 
+        if revealMap[self.index[0]][self.index[1]] == 2:
+            self.image.fill((100 , 0 , 0))
 
 
 rows = len(worldMap)
@@ -128,10 +130,16 @@ def displayMap(surface : pg.surface.Surface):
                     else:
                         newColour = (255 , 255 , 255)
                     tile = Tile(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , tiles , (rowIndex , columnIndex) , newColour)
-                    tile.update(surface)
+                    bombCount = checkBombCount(tile.index)
+                    tile.numberOfBombs = bombCount
+                    # tile.update(surface)
                     
                 case 1:
-                    Bomb(widthOfSegment , heightOfSegment , (currentCenterx, currentCentery) , bombs , (rowIndex , columnIndex))
+                    colour = (255 , 255 , 255)
+                    if revealMap[rowIndex][columnIndex] == 2:
+                        colour = (100 , 0 , 0)
+
+                    Bomb(widthOfSegment , heightOfSegment , (currentCenterx, currentCentery) , bombs , (rowIndex , columnIndex) , colour)
 
             currentCenterx = currentCenterx + widthOfSegment + 1
             # print(segmentRect.center)
@@ -183,40 +191,42 @@ def checkBombCount(index : tuple):
     leftWallNull = False
     rightWallNull = False
 
-    if index[0] >= len(worldMap[0]): # Right Wall Null
+    if index[0] == len(worldMap[0]) - 1: # Right Wall Null
         rightWallNull = True
     if index[0] == 0: # Left Wall Null
         leftWallNull = True
-    if index[1] >= len(worldMap): # Bottom Wall Null
+    if index[1] == len(worldMap) - 1: # Bottom Wall Null
         bottomWallNull = True
     if index[1] == 0: # Top Wall Null
         topWallNull = True
 
     total = 0
 
-    if rightWallNull: # Middle Right
+    print(index)
+
+    if not rightWallNull: # Middle Right
         if worldMap[index[0] + 1][index[1]] == 1:
             total += 1
-    if topWallNull and rightWallNull: # Top Right
-        if worldMap[index[0] + 1][index[1] + 1] == 1:
+    if  not (topWallNull or rightWallNull): # Top Right
+        if worldMap[index[0] + 1][index[1] - 1] == 1:
             total += 1
-    if topWallNull: # Top Middle
-        if worldMap[index[0]][index[1] + 1]:
+    if not topWallNull: # Top Middle
+        if worldMap[index[0]][index[1] - 1] == 1:
             total += 1
-    if topWallNull and leftWallNull: # Top Left
-        if worldMap[index[0] - 1][index[1] + 1]:
+    if not (topWallNull or leftWallNull): # Top Left
+        if worldMap[index[0] - 1][index[1] - 1] == 1:
             total += 1
-    if leftWallNull: # Middle Left
-        if worldMap[index[0] - 1][index[1]]:
+    if not leftWallNull: # Middle Left
+        if worldMap[index[0] - 1][index[1]] == 1:
             total += 1
-    if bottomWallNull and leftWallNull: # Bottom Left
-        if worldMap[index[0] - 1][index[1] - 1]:
+    if not (bottomWallNull or leftWallNull): # Bottom Left
+        if worldMap[index[0] - 1][index[1] + 1] == 1:
             total += 1
-    if bottomWallNull: # Bottom Middle
-         if worldMap[index[0]][index[1] - 1]:
+    if not bottomWallNull: # Bottom Middle
+         if worldMap[index[0]][index[1] + 1] == 1:
             total += 1
-    if bottomWallNull and rightWallNull: # Bottom Right
-         if worldMap[index[0] + 1][index[1] - 1]:
+    if not (bottomWallNull or rightWallNull): # Bottom Right
+         if worldMap[index[0] + 1][index[1] + 1] == 1:
             total += 1
-    
+
     return total
