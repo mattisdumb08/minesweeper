@@ -2,6 +2,7 @@ import pygame as pg
 import random as rndm
 
 # Empty Space 0 - 8
+# Revealed 9
 # Bomb -1
 
 worldMap = [
@@ -17,18 +18,21 @@ worldMap = [
 
 ]
 
+revealMap = [] # 0 unrevealed 1 reveled
+
 tiles = pg.sprite.Group()
 bombs = pg.sprite.Group()
 
 class Segment(pg.sprite.Sprite):
 
-    def __init__(self , newWidth , newHeight , newCenter , groupToAdd , newIndex : tuple):
+    def __init__(self , newWidth , newHeight , newCenter , groupToAdd , newIndex : tuple ):
         pg.sprite.Sprite.__init__(self)
         self.width = newWidth
         self.height = newHeight
         self.center = newCenter
-        self.image = pg.Surface((newWidth , newHeight) , pg.SRCCOLORKEY).convert()
-        self.image.fill((255 , 255 , 255))
+        self.image = pg.Surface((newWidth , newHeight) , pg.SRCCOLORKEY)
+        # self.image.fill((255 , 255 , 255))
+        # self.image.fill(colour)
         self.rect = pg.rect.Rect(newCenter[0] , newCenter[1] , newWidth , newHeight)
         self.index = newIndex
 
@@ -60,29 +64,34 @@ class Segment(pg.sprite.Sprite):
 
 class Tile(Segment):
 
-    def _init(self , newWidth , newHeight , newCenter , groupToAdd , newIndex):
-        super.__init__(newWidth , newHeight , newCenter , groupToAdd , newIndex)
-
+    def __init__(self , newWidth , newHeight , newCenter , groupToAdd , newIndex , colour):
+        super().__init__(newWidth , newHeight , newCenter , groupToAdd , newIndex)
+        self.image.fill(colour)
         self.numberOfBombs = 0
-    
+
     def update(self , surface : pg.surface.Surface):
         
         self.numberOfBombs = checkBombCount(self.index)
 
-        if self.revealed:
+        if revealMap[self.index[0]][self.index[1]]:
+
+            self.image.fill((100 , 100 , 100))
+
             text = pg.sysfont.SysFont("Serif" , 16 , True)
-            image = text.render(str(self.numberOfBombs) , True , (0 , 0 , 0))
+            image = text.render(str(self.numberOfBombs) , True , (0 , 200 , 0))
+            imageRect = image.get_rect()
+            imageRect.center = (self.center[0] + self.getWidth() , self.center[1] + self.getHeight())
             image.convert()
-            surface.blit(image , self.getCenter())
+            surface.blit(image , imageRect)
             
 class Bomb(Segment):
     
     def __init__(self, newWidth, newHeight, newCenter, groupToAdd , newIndex):
         super().__init__(newWidth, newHeight, newCenter, groupToAdd , newIndex)
 
-        self.image.fill((255 , 255 , 255))
+        # self.image.fill((255 , 255 , 255))
 
-        # self.image.fill((30 , 0 , 0))
+        self.image.fill((30 , 0 , 0))
 
 
 
@@ -113,9 +122,16 @@ def displayMap(surface : pg.surface.Surface):
 
             match worldMap[rowIndex][columnIndex]:
                 case 0:
-                    newSegment = Tile(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , tiles , (rowIndex , columnIndex))
+                    newColour = (0 , 0 ,0)
+                    if revealMap[rowIndex][columnIndex]:
+                        newColour = (100 , 100 , 100)
+                    else:
+                        newColour = (255 , 255 , 255)
+                    tile = Tile(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , tiles , (rowIndex , columnIndex) , newColour)
+                    tile.update(surface)
+                    
                 case 1:
-                    newSegment = Bomb(widthOfSegment , heightOfSegment , (currentCenterx, currentCentery) , bombs , (rowIndex , columnIndex))
+                    Bomb(widthOfSegment , heightOfSegment , (currentCenterx, currentCentery) , bombs , (rowIndex , columnIndex))
 
             currentCenterx = currentCenterx + widthOfSegment + 1
             # print(segmentRect.center)
@@ -136,16 +152,29 @@ def defineMap(rows , columns):
     for i in range(0 , rows):
         worldMap.append([])
         for number in range(0 , columns):
-            worldMap[i].append(1)
+            worldMap[i].append([0])
+    
+    for i in range(0 , rows):
+        revealMap.append([])
+        for k in range(0 , columns):
+            revealMap[i].append(0)
 
 def randomiseMap(rows , columns): # Uses dimensions
 
     worldMap.clear() # Remove all sprites to save memory
+    revealMap.clear()
     
     for i in range(0 , rows):
         worldMap.append([])
         for number in range(0 , columns):
             worldMap[i].append(rndm.randint(0 , 1))
+
+    for i in range(0 , rows):
+        revealMap.append([])
+        for k in range(0 , columns):
+            revealMap[i].append(0)
+    
+    print(worldMap)
 
 def checkBombCount(index : tuple):
 
