@@ -70,14 +70,10 @@ class Tile(Segment):
         self.numberOfBombs = checkBombCount(self.index)
 
         if self.revealed:
-            self.numberOnFace = pg.font.SysFont("arial" , 60)
-            
-            surfaceText = self.numberOnFace.render(str(self.numberOfBombs) , True ,  (200 , 200 , 200) , (0 , 0 , 0))
-
-            surfaceText.convert()
-            surface.blit(surfaceText , self.getCenter())
-            pg.display.flip()
-
+            text = pg.sysfont.SysFont("Serif" , 16 , True)
+            image = text.render(str(self.numberOfBombs) , True , (0 , 0 , 0))
+            image.convert()
+            surface.blit(image , self.getCenter())
 
 class Bomb(Segment):
     
@@ -110,8 +106,6 @@ def displayMap(surface : pg.surface.Surface):
 
     currentCenterx = 0
     currentCentery = 0
-
-    segmentRect = pg.Rect(currentCenterx , currentCentery , widthOfSegment, heightOfSegment)
   
     for rowIndex in range(0 , worldMap.__len__()):
 
@@ -152,8 +146,6 @@ def randomiseMap(rows , columns): # Uses dimensions
         worldMap.append([])
         for number in range(0 , columns):
             worldMap[i].append(rndm.randint(0 , 1))
-    
-    print(worldMap)
 
 def checkBombCount(index : tuple):
 
