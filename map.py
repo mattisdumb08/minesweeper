@@ -74,7 +74,7 @@ class Tile(Segment):
             image = text.render(str(self.numberOfBombs) , True , (0 , 0 , 0))
             image.convert()
             surface.blit(image , self.getCenter())
-
+            
 class Bomb(Segment):
     
     def __init__(self, newWidth, newHeight, newCenter, groupToAdd , newIndex):
