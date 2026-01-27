@@ -23,10 +23,9 @@ def main():
 
         surface.fill((0 , 0 , 0))
         
+        map.displayMap(surface)
         map.bombs.update()
         map.tiles.update(surface)
-        map.displayMap(surface)
-
         window.flip()
 
         keys = pg.key.get_pressed()
@@ -40,13 +39,15 @@ def main():
         
         if mouses[0]:
             location = pg.mouse.get_pos()
-            rect = pg.Rect(pg.rect.RectType(location[0] , location[1]))
+
+            rect = pg.rect.Rect(0 , 0 , 1 , 1)
+            rect.centerx = location[0]
+            rect.centery = location[1]
 
             for sprite in map.tiles:
-                if pg.sprite.collide_rect(rect , sprite.rect):
-                    print("Sprite CLicked")
-
-            print("Left Clicked")
+                if sprite.rect.collidepoint(location[0] , location[1]):
+                    print(sprite.index)
+                    map.revealMap[sprite.index[0]][sprite.index[1]] = True
 
         match keys:
             case pg.K_RIGHT:
