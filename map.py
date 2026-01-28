@@ -73,7 +73,7 @@ class Tile(Segment):
         
         self.numberOfBombs = checkBombCount(self.index)
 
-        if revealMap[self.index[0]][self.index[1]]:
+        if revealMap[self.index[0]][self.index[1]] == 1:
 
             self.image.fill((100 , 100 , 100))
 
@@ -83,6 +83,8 @@ class Tile(Segment):
             imageRect.center = (self.center[0] + (self.getWidth() / 2) , self.center[1] + (self.getHeight() / 2))
             image.convert()
             surface.blit(image , imageRect)
+        elif revealMap[self.index[0]][self.index[1]] == 3:
+            self.image.fill((0 , 0 , 100))
             
 class Bomb(Segment):
     
@@ -95,6 +97,8 @@ class Bomb(Segment):
 
         if revealMap[self.index[0]][self.index[1]] == 2:
             self.image.fill((100 , 0 , 0))
+        elif revealMap[self.index[0]][self.index[1]] == 3:
+            self.image.fill((0 , 0 , 100))
 
 
 rows = len(worldMap)
@@ -125,8 +129,10 @@ def displayMap(surface : pg.surface.Surface):
             match worldMap[rowIndex][columnIndex]:
                 case 0:
                     newColour = (0 , 0 ,0)
-                    if revealMap[rowIndex][columnIndex]:
+                    if revealMap[rowIndex][columnIndex] == 1:
                         newColour = (100 , 100 , 100)
+                    elif revealMap[rowIndex][columnIndex] == 3:
+                        newColour = (0 , 0 , 100)
                     else:
                         newColour = (255 , 255 , 255)
                     tile = Tile(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , tiles , (rowIndex , columnIndex) , newColour)
@@ -138,6 +144,8 @@ def displayMap(surface : pg.surface.Surface):
                     colour = (255 , 255 , 255)
                     if revealMap[rowIndex][columnIndex] == 2:
                         colour = (100 , 0 , 0)
+                    elif revealMap[rowIndex][columnIndex] == 3:
+                        colour = (0 , 0 , 100)
 
                     Bomb(widthOfSegment , heightOfSegment , (currentCenterx, currentCentery) , bombs , (rowIndex , columnIndex) , colour)
 
@@ -171,20 +179,31 @@ def randomiseMap(rows , columns): # Uses dimensions
 
     worldMap.clear() # Remove all sprites to save memory
     revealMap.clear()
-    
+
+    chance = 15 # Out of 100
+
     for i in range(0 , rows):
         worldMap.append([])
         for number in range(0 , columns):
-            worldMap[i].append(rndm.randint(0 , 1))
+
+            appendNumber = 0
+            randomNumber = rndm.randint(0 , 100)
+
+            if 0 <= randomNumber <= chance:
+                appendNumber = 1
+                print("Bomb planted")
+
+            worldMap[i].append(appendNumber)
 
     for i in range(0 , rows):
         revealMap.append([])
         for k in range(0 , columns):
             revealMap[i].append(0)
     
-    print(worldMap)
-
 def checkBombCount(index : tuple):
+
+
+
 
     topWallNull = False
     bottomWallNull = False
@@ -201,9 +220,6 @@ def checkBombCount(index : tuple):
         topWallNull = True
 
     total = 0
-
-    print(index)
-
     if not rightWallNull: # Middle Right
         if worldMap[index[0] + 1][index[1]] == 1:
             total += 1
@@ -230,3 +246,12 @@ def checkBombCount(index : tuple):
             total += 1
 
     return total
+
+def checkLoss():
+    sprite : Bomb
+
+    for sprite in bombs:
+        if revealMap[sprite.index[0]][sprite.index[1]] == 2:
+            return True
+    
+    return False
