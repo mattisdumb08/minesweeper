@@ -1,9 +1,19 @@
 import pygame as pg
 import map
 
+# Reveal map Key = 1 revealed 0 is unrevealed 2 is a bomb that is revealed 3 is flagged
+
 pg.init()
 
+running = True
+
+def shutdown():
+   global running
+   running = False
+
 def main():
+
+    global running
 
     window = pg.display
     window.set_caption("Minesweeper")
@@ -13,7 +23,7 @@ def main():
     map.randomiseMap(16 , 16)
     map.displayMap(surface)
 
-    running = True
+    micePress = [0 , 0 , 0]
 
     while running:
 
@@ -25,32 +35,49 @@ def main():
         window.flip()
 
         keys = pg.key.get_pressed()
-        mouses = pg.mouse.get_pressed() # Left, Middle , Right
 
         events = pg.event.get()
 
         for event in events:
+
             if event.type == pg.QUIT:
                 running = False
-        
-        if mouses[0]:
-            location = pg.mouse.get_pos()
+            if event.type == pg.MOUSEBUTTONDOWN:
 
-            rect = pg.rect.Rect(0 , 0 , 1 , 1)
-            rect.centerx = location[0]
-            rect.centery = location[1]
+                mouses = pg.mouse.get_pressed() # Left, Middle , Right
 
-            for sprite in map.tiles:
-                if sprite.rect.collidepoint(location[0] , location[1]):
-                    print(sprite.index)
-                    map.revealMap[sprite.index[0]][sprite.index[1]] = True
-            for sprite in map.bombs:
-                if sprite.rect.collidepoint(location[0] , location[1]):
-                    map.revealMap[sprite.index[0]][sprite.index[1]] = 2
+                if mouses[0]:
+                    location = pg.mouse.get_pos()
+                    micePress[0] = True
 
-        match keys:
-            case pg.K_RIGHT:
-                print("Mouse pressed")
+                    for sprite in map.tiles:
+                        if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
+                            print(sprite.index)
+                            map.revealMap[sprite.index[0]][sprite.index[1]] = True
+                    for sprite in map.bombs:
+                        if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
+                            map.revealMap[sprite.index[0]][sprite.index[1]] = 2
+                            
+                if mouses[2]:
+
+                    location = pg.mouse.get_pos()
+
+                    micePress[2] = True
+
+                    sprite : map.Tile
+
+                    for sprite in map.tiles:
+                        if map.revealMap[sprite.index[0]][sprite.index[1]] == 0 and sprite.rect.collidepoint(location[0] , location[1]):
+                            map.revealMap[sprite.index[0]][sprite.index[1]] = 3
+                        elif map.revealMap[sprite.index[0]][sprite.index[1]] == 3 and sprite.rect.collidepoint(location[0] , location[1]):
+                            map.revealMap[sprite.index[0]][sprite.index[1]] = 0
+                    for sprite in map.bombs:
+                        if map.revealMap[sprite.index[0]][sprite.index[1]] == 0 and sprite.rect.collidepoint(location[0] , location[1]):
+                            map.revealMap[sprite.index[0]][sprite.index[1]] = 3
+                        elif map.revealMap[sprite.index[0]][sprite.index[1]] == 3 and sprite.rect.collidepoint(location[0] , location[1]):
+                            map.revealMap[sprite.index[0]][sprite.index[1]] = 0
+                            
+        # running = not map.checkLoss()
 
 
     return 0   
