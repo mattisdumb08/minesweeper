@@ -58,6 +58,11 @@ class Segment(pg.sprite.Sprite):
         return self.height
     def setHeight(self , newHeight):
         self.height = newHeight
+
+    def setIndex(self , newIndex):
+        self.index = newIndex
+    def getIndex(self):
+        return self.index
     
     def update(self):
         pass
@@ -71,20 +76,22 @@ class Tile(Segment):
 
     def update(self , surface : pg.surface.Surface):
         
-        self.numberOfBombs = checkBombCount(self.index)
-
         if revealMap[self.index[0]][self.index[1]] == 1:
 
             self.image.fill((100 , 100 , 100))
 
-            text = pg.sysfont.SysFont("Serif" , 16 , True)
-            image = text.render(str(self.numberOfBombs) , True , (0 , 200 , 0))
-            imageRect = image.get_rect()
-            imageRect.center = (self.center[0] + (self.getWidth() / 2) , self.center[1] + (self.getHeight() / 2))
-            image.convert()
-            surface.blit(image , imageRect)
+            self.text = pg.sysfont.SysFont("Serif" , 16 , True)
+            self.numberImage = self.text.render(str(self.numberOfBombs) , True , (0 , 0 , 0))
+            imageRect = self.numberImage.get_rect()
+            imageRect.center = ((self.getWidth() / 2) , (self.getHeight() / 2))
+            self.numberImage.convert()
+            self.image.blit(self.numberImage , imageRect)
+            
         elif revealMap[self.index[0]][self.index[1]] == 3:
             self.image.fill((0 , 0 , 100))
+        
+        elif revealMap[self.index[0]][self.index[1]] == 0:
+            self.image.fill((255 , 255 , 255))
             
 class Bomb(Segment):
     
@@ -136,7 +143,7 @@ def displayMap(surface : pg.surface.Surface):
                     else:
                         newColour = (255 , 255 , 255)
                     tile = Tile(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , tiles , (rowIndex , columnIndex) , newColour)
-                    bombCount = checkBombCount(tile.index)
+                    bombCount = checkBombCount(tile.getIndex())
                     tile.numberOfBombs = bombCount
                     # tile.update(surface)
                     
@@ -191,7 +198,6 @@ def randomiseMap(rows , columns): # Uses dimensions
 
             if 0 <= randomNumber <= chance:
                 appendNumber = 1
-                print("Bomb planted")
 
             worldMap[i].append(appendNumber)
 
@@ -248,10 +254,11 @@ def checkBombCount(index : tuple):
     return total
 
 def checkLoss():
+
     sprite : Bomb
 
     for sprite in bombs:
         if revealMap[sprite.index[0]][sprite.index[1]] == 2:
-            return True
+            return False
     
-    return False
+    return True
