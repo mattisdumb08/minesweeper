@@ -1,9 +1,12 @@
 import pygame as pg
 import random as rndm
 
-turtleName = "turtle.jpg"
+pg.font.init()
 
+turtleName = "turtle.jpg"
 turtleImage = pg.image.load(turtleName)
+
+text = pg.sysfont.SysFont("Serif" , 16 , True)
 
 # Empty Space 0 - 8
 # Revealed 9
@@ -78,6 +81,8 @@ class Tile(Segment):
     def __init__(self , newWidth , newHeight , newCenter , groupToAdd , newIndex , colour):
         super().__init__(newWidth , newHeight , newCenter , groupToAdd , newIndex)
         self.image.fill(colour)
+        self.numberImage = None
+        self.imageRect = None
 
     def update(self , surface : pg.surface.Surface):
         
@@ -88,12 +93,16 @@ class Tile(Segment):
 
             self.image.fill((100 , 100 , 100))
 
-            self.text = pg.sysfont.SysFont("Serif" , 16 , True)
-            self.numberImage = self.text.render(str(self.numberOfBombs) , True , (0 , 0 , 0))
-            imageRect = self.numberImage.get_rect()
-            imageRect.center = ((self.getWidth() / 2) , (self.getHeight() / 2))
-            self.numberImage.convert()
-            self.image.blit(self.numberImage , imageRect)
+            imageRect : pg.Rect
+
+            if self.numberImage == None:
+
+                self.numberImage = text.render(str(self.numberOfBombs) , True , (0 , 0 , 0))
+                self.imageRect = self.numberImage.get_rect()
+                self.imageRect.center = ((self.getWidth() / 2) , (self.getHeight() / 2))
+                self.numberImage.convert()
+    
+            self.image.blit(self.numberImage , self.imageRect)
             
         elif revealMap[self.index[0]][self.index[1]] == 3:
             
@@ -187,8 +196,8 @@ def displayMap(surface : pg.surface.Surface):
         currentCenterx = (surface.get_size()[0] / 2) - (sizeOfSurface[0] / 2)
         currentCentery = (currentCentery + heightOfSegment + 1)
     
-    bombs.draw(surface)
-    tiles.draw(surface)
+    # bombs.draw(surface)
+    # tiles.draw(surface)
 
 def defineMap(rows , columns):
 
