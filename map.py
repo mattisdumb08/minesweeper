@@ -4,7 +4,6 @@ import random as rndm
 turtleName = "turtle.jpg"
 
 turtleImage = pg.image.load(turtleName)
-turtleImage.convert_alpha()
 
 # Empty Space 0 - 8
 # Revealed 9
@@ -74,10 +73,11 @@ class Segment(pg.sprite.Sprite):
 
 class Tile(Segment):
 
+    numberOfBombs = 0
+
     def __init__(self , newWidth , newHeight , newCenter , groupToAdd , newIndex , colour):
         super().__init__(newWidth , newHeight , newCenter , groupToAdd , newIndex)
         self.image.fill(colour)
-        self.numberOfBombs = 0
 
     def update(self , surface : pg.surface.Surface):
         
@@ -167,7 +167,7 @@ def displayMap(surface : pg.surface.Surface):
                     else:
                         newColour = (255 , 255 , 255)
                     tile = Tile(widthOfSegment , heightOfSegment , (currentCenterx , currentCentery) , tiles , (rowIndex , columnIndex) , newColour)
-                    bombCount = checkBombCount(tile.getIndex())
+                    bombCount = checkBombCountAlternate(tile.getIndex())
                     tile.numberOfBombs = bombCount
                     # tile.update(surface)
                     
@@ -273,6 +273,44 @@ def checkBombCount(index : tuple):
             total += 1
 
     return total
+
+def checkBombCountAlternate(index : tuple):
+    xIndex = index[1]
+    yIndex = index[0]
+
+    total = 0
+
+    for dx in [-1 , 0 , 1]:
+        for dy in [-1 ,  0 , 1]:
+
+            if dx == 0 and dy == 0:
+                continue
+
+            elif 0 <= xIndex + dx < len(worldMap[0]) and 0 <= yIndex + dy < len(worldMap):
+
+                if worldMap[yIndex + dy][xIndex + dx] == 1:
+                    total += 1
+    
+    return total
+
+def checkFlagCount(index : tuple):
+    xIndex = index[1]
+    yIndex = index[0]
+
+    total = 0
+
+    for dx in [-1 , 0 , 1]:
+        for dy in [-1 ,  0 , 1]:
+
+            if dx == 0 and dy == 0:
+                continue
+
+            elif 0 <= xIndex + dx < len(revealMap[0]) and 0 <= yIndex + dy < len(revealMap):
+
+                if revealMap[yIndex + dy][xIndex + dx] == 3:
+                    total += 1
+    
+    return total   
 
 def revealAdjacent(index :tuple , round : int | None): # what the fuck is this
 
@@ -417,7 +455,26 @@ def revealAdjacent(index :tuple , round : int | None): # what the fuck is this
             numberOfBombs = checkBombCount((index[0] + 1 , index[1] + 1))
             if revealMap[index[0] + 1][index[1] + 1] == 0 and worldMap[index[0] + 1][index[1] + 1] == 0:
                 revealMap[index[0] + 1][index[1] + 1] = 1
-                
+
+def revealAdjacentAlternate(index : tuple):
+    xIndex = index[1]
+    yIndex = index[0]
+
+    for dx in [-1 , 0 , 1]:
+        for dy in [-1 , 0 , 1]:
+            if dx == 0 and dy == 0:
+                continue
+            
+            newXIndex = xIndex + dx
+            newYIndex = yIndex + dy
+
+            if 0 <= newXIndex < len(worldMap[0]) and 0 <= newYIndex < len(worldMap):
+
+                if worldMap[newYIndex][newXIndex] == 0 and revealMap[newYIndex][newXIndex] == 0 and checkBombCountAlternate(index) == 0:
+                    revealMap[newYIndex][newXIndex] = 1
+
+                # if worldMap[newYIndex][newXIndex] == 0 and checkBombCountAlternate((yIndex , xIndex)) == 0:
+                #     revealAdjacentAlternate((newYIndex , newXIndex))
 
 def checkLoss():
 
