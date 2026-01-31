@@ -6,6 +6,8 @@ import map
 # Reveal map Key = 1 revealed 0 is unrevealed 2 is a bomb that is revealed 3 is flagged
 pg.init()
 
+window = pg.display
+
 numberOfBombsOpened = 0
 
 def checkNumberOfBombsOpen():
@@ -24,7 +26,7 @@ def shutdown():
    global running
    running = False
 
-def revealAdjacent0():
+def revealAdjacent0(spread : bool , delay : int):
     
     sprite : map.Tile
 
@@ -34,6 +36,13 @@ def revealAdjacent0():
             continue
 
         if map.revealMap[sprite.index[0]][sprite.index[1]] == 1 and map.worldMap[sprite.index[0]][sprite.index[1]] == 0 and map.checkBombCountAlternate(sprite.index) == 0 :
+
+            if spread:
+
+                pg.time.delay(delay)
+
+                window.flip()
+
             map.revealAdjacentAlternate(sprite.index)
         
         # elif map.revealMap[sprite.index[0]][sprite.index[1]] == 1 and map.worldMap[sprite.index[0]][sprite.index[1]] == 0 and map.checkFlagCount(sprite.index) != sprite.numberOfBombs:
@@ -62,15 +71,13 @@ def main():
         surface.fill((0 , 0 , 225))
         
         # map.displayMap(surface)
-        map.bombs.update(surface)
-        map.tiles.update(surface)
 
         map.bombs.draw(surface)
         map.tiles.draw(surface)
 
         map.bombs.update(surface)
         map.tiles.update(surface)
-        revealAdjacent0()
+        revealAdjacent0(True , 2)
 
         window.flip()
 
