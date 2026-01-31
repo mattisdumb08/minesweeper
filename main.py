@@ -1,9 +1,8 @@
 import pygame as pg
-import map
-
+import time
 # Reveal map Key = 1 revealed 0 is unrevealed 2 is a bomb that is revealed 3 is flagged
-
 pg.init()
+
 
 running = True
 
@@ -17,17 +16,18 @@ def main():
 
     window = pg.display
     window.set_caption("Minesweeper")
-    window.set_mode((600 , 500) , pg.RESIZABLE)
+    window.set_mode((1600 , 900))
     surface = window.get_surface()
+
+    import map
 
     map.randomiseMap(16 , 16)
     map.displayMap(surface)
 
-    micePress = [0 , 0 , 0]
 
     while running:
 
-        surface.fill((0 , 0 , 0))
+        surface.fill((0 , 0 , 225))
         
         # map.displayMap(surface)
         map.bombs.update(surface)
@@ -45,7 +45,7 @@ def main():
 
         events = pg.event.get()
 
-        running = map.checkLoss()
+        # running = map.checkLoss()
 
         for event in events:
 
@@ -57,36 +57,31 @@ def main():
                 location = pg.mouse.get_pos()
 
                 if mouses[0]:
-                    micePress[0] = True
 
                     for sprite in map.tiles:
                         if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
-                            print(sprite.index)
-                            map.revealMap[sprite.index[0]][sprite.index[1]] = True
+                            map.revealMap[sprite.index[0]][sprite.index[1]] = 1
+                            startTime = time.time()
+                            map.revealAdjacent(sprite.index , 0)
+                            print("f{time.time() - startTime}")
                     for sprite in map.bombs:
                         if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 2
                             
                 if mouses[2]:
-                    
-                    micePress[2] = True
 
                     sprite : map.Tile
 
                     for sprite in map.tiles:
                         if map.revealMap[sprite.index[0]][sprite.index[1]] == 0 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 3
-                            print(sprite.index , " " , map.revealMap[sprite.index[0]][sprite.index[1]])
                         elif map.revealMap[sprite.index[0]][sprite.index[1]] == 3 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 0
-                            print(sprite.index , " " , map.revealMap[sprite.index[0]][sprite.index[1]])
                     for sprite in map.bombs:
                         if map.revealMap[sprite.index[0]][sprite.index[1]] == 0 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 3
-                            print(sprite.index , " " , map.revealMap[sprite.index[0]][sprite.index[1]])
                         elif map.revealMap[sprite.index[0]][sprite.index[1]] == 3 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 0
-                            print(sprite.index , " " , map.revealMap[sprite.index[0]][sprite.index[1]])
                             
 
 

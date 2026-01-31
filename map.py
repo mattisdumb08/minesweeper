@@ -1,6 +1,11 @@
 import pygame as pg
 import random as rndm
 
+turtleName = "turtle.jpg"
+
+turtleImage = pg.image.load(turtleName)
+turtleImage.convert_alpha()
+
 # Empty Space 0 - 8
 # Revealed 9
 # Bomb -1
@@ -76,7 +81,10 @@ class Tile(Segment):
 
     def update(self , surface : pg.surface.Surface):
         
-        if revealMap[self.index[0]][self.index[1]] == 1:
+        if revealMap[self.index[0]][self.index[1]] == 1 and self.numberOfBombs == 0:
+            self.image.fill((100 , 100 , 100))
+
+        elif revealMap[self.index[0]][self.index[1]] == 1:
 
             self.image.fill((100 , 100 , 100))
 
@@ -88,7 +96,13 @@ class Tile(Segment):
             self.image.blit(self.numberImage , imageRect)
             
         elif revealMap[self.index[0]][self.index[1]] == 3:
-            self.image.fill((0 , 0 , 100))
+            
+            turtleRect = turtleImage.get_rect()
+
+            scaled = pg.transform.scale(turtleImage , (int(self.width) , int(self.height)))
+
+            self.image.fill((0 , 0 , 0))
+            self.image.blit(scaled , turtleRect)
         
         elif revealMap[self.index[0]][self.index[1]] == 0:
             self.image.fill((255 , 255 , 255))
@@ -102,10 +116,20 @@ class Bomb(Segment):
 
     def update(self , surface : pg.surface.Surface):
 
-        if revealMap[self.index[0]][self.index[1]] == 2:
+        if revealMap[self.index[0]][self.index[1]] == 0:
+            self.image.fill((255 , 255 , 255))
+        elif revealMap[self.index[0]][self.index[1]] == 2:
             self.image.fill((100 , 0 , 0))
+
         elif revealMap[self.index[0]][self.index[1]] == 3:
-            self.image.fill((0 , 0 , 100))
+            # self.image.fill((0 , 0 , 100))
+            self.image.fill((255 , 255 , 255))
+
+            turtleRect = turtleImage.get_rect()
+
+            scaled = pg.transform.scale(turtleImage , (int(self.width) , int(self.height)))
+
+            self.image.blit(scaled , turtleRect)
 
 
 rows = len(worldMap)
@@ -118,7 +142,7 @@ def displayMap(surface : pg.surface.Surface):
 
     rows = len(worldMap)
     columns = len(worldMap[0])
-    sizeOfSurface = surface.get_size()
+    sizeOfSurface = (600 , 600)
 
     # widthOfSegment = sizeOfSurface / columns
     # heightOfSegment = sizeOfSurface / rows
@@ -126,8 +150,8 @@ def displayMap(surface : pg.surface.Surface):
     widthOfSegment = sizeOfSurface[0] / columns
     heightOfSegment = sizeOfSurface[1] / rows
 
-    currentCenterx = 0
-    currentCentery = 0
+    currentCenterx = (surface.get_size()[0] / 2) - (sizeOfSurface[0] / 2)
+    currentCentery = (surface.get_size()[1] / 2) - (sizeOfSurface[1] / 2)
   
     for rowIndex in range(0 , worldMap.__len__()):
 
@@ -160,8 +184,8 @@ def displayMap(surface : pg.surface.Surface):
             # print(segmentRect.center)
             # print( "r : " + str(rowIndex))
             # print("c : " + str(columnIndex))
-        currentCenterx = 0
-        currentCentery = currentCentery + heightOfSegment + 1
+        currentCenterx = (surface.get_size()[0] / 2) - (sizeOfSurface[0] / 2)
+        currentCentery = (currentCentery + heightOfSegment + 1)
     
     bombs.draw(surface)
     tiles.draw(surface)
@@ -208,9 +232,6 @@ def randomiseMap(rows , columns): # Uses dimensions
     
 def checkBombCount(index : tuple):
 
-
-
-
     topWallNull = False
     bottomWallNull = False
     leftWallNull = False
@@ -252,6 +273,151 @@ def checkBombCount(index : tuple):
             total += 1
 
     return total
+
+def revealAdjacent(index :tuple , round : int | None): # what the fuck is this
+
+    topWallNull = False
+    bottomWallNull = False
+    leftWallNull = False
+    rightWallNull = False
+
+    if round == None:
+        round = 0
+
+    if index[0] == len(revealMap[0]) - 1: # Right Wall Null
+        rightWallNull = True
+    if index[0] == 0: # Left Wall Null
+        leftWallNull = True
+    if index[1] == len(revealMap) - 1: # Bottom Wall Null
+        bottomWallNull = True
+    if index[1] == 0: # Top Wall Null
+        topWallNull = True
+
+    if round == 0:
+
+        if not rightWallNull: # Middle Right
+            numberOfBombs = checkBombCount((index[0] + 1 , index[1]))
+            
+            # if numberOfBombs == 0:
+            #     revealAdjacent((index[0] + 1 , index[1]) , 0)
+
+            if revealMap[index[0] + 1][index[1]] == 0 and numberOfBombs == 0 and worldMap[index[0] + 1][index[1]] == 0:
+                revealMap[index[0] + 1][index[1]] = 1
+
+                revealAdjacent((index[0] + 1 , index[1]) , 2)
+
+        if  not (topWallNull or rightWallNull): # Top Right
+            numberOfBombs = checkBombCount((index[0] + 1 , index[1] - 1))
+
+            # if numberOfBombs == 0:
+            #     revealAdjacent((index[0] + 1 , index[1] - 1) , 0)
+
+            if revealMap[index[0] + 1][index[1] - 1] == 0 and numberOfBombs == 0 and worldMap[index[0] +1][index[1] - 1] == 0:
+                revealMap[index[0] + 1][index[1] - 1] = 1
+                revealAdjacent((index[0] + 1 , index[1] - 1) , 2)
+
+        if not topWallNull: # Top Middle
+            numberOfBombs = checkBombCount((index[0] , index[1] - 1))
+
+            # if numberOfBombs == 0:
+            #     revealAdjacent((index[0] , index[1] - 1) , 0)
+
+            if revealMap[index[0]][index[1] - 1] == 0 and numberOfBombs == 0 and worldMap[index[0]][index[1] - 1] == 0:
+                revealMap[index[0]][index[1] - 1] = 1
+                revealAdjacent((index[0] , index[1] - 1) , 2)
+
+        if not (topWallNull or leftWallNull): # Top Left
+            numberOfBombs = checkBombCount((index[0] - 1 , index[1] - 1))
+
+            # if numberOfBombs == 0:
+            #     revealAdjacent((index[0] - 1 , index[1] - 1) , 0)
+
+            if revealMap[index[0] - 1][index[1] - 1] == 0 and numberOfBombs == 0 and worldMap[index[0] - 1][index[1] - 1] == 0:
+                revealMap[index[0] - 1][index[1] - 1] = 1
+                revealAdjacent((index[0] - 1 , index[1] - 1) , 2)
+
+        if not leftWallNull: # Middle Left
+            numberOfBombs = checkBombCount((index[0] - 1 , index[1]))
+
+            # if numberOfBombs == 0:
+            #     revealAdjacent((index[0] - 1 , index[1]) , 0)
+            
+            if revealMap[index[0] - 1][index[1]] == 0 and numberOfBombs == 0 and worldMap[index[0] - 1][index[1]] == 0:
+                revealMap[index[0] - 1][index[1]] = 1
+                revealAdjacent((index[0] - 1 , index[1]) , 2)
+
+        if not (bottomWallNull or leftWallNull): # Bottom Left
+            numberOfBombs = checkBombCount((index[0] - 1 , index[1] + 1))
+            # if numberOfBombs == 0:
+            #     revealAdjacent((index[0] - 1 , index[1] + 1) , 0)
+
+            if revealMap[index[0] - 1][index[1] + 1] == 0 and numberOfBombs == 0 and worldMap[index[0] - 1][index[1] + 1] == 0:
+                revealMap[index[0] - 1][index[1] + 1] = 1
+                revealAdjacent((index[0] - 1 , index[1] + 1) , 2)
+
+        if not bottomWallNull: # Bottom Middle
+            numberOfBombs = checkBombCount((index[0] , index[1] + 1))
+
+            # if numberOfBombs == 0:
+            #     revealAdjacent((index[0] , index[1] + 1) , 0)
+
+            if revealMap[index[0]][index[1] + 1] == 0 and numberOfBombs == 0 and worldMap[index[0]][index[1] + 1] == 0:
+                revealMap[index[0]][index[1] + 1] = 1
+                revealAdjacent((index[0] , index[1] + 1) , 2)
+
+        if not (bottomWallNull or rightWallNull): # Bottom Right
+            numberOfBombs = checkBombCount((index[0] + 1 , index[1] + 1))
+
+            # if numberOfBombs == 0:
+            #     revealAdjacent((index[0] + 1 , index[1] + 1) , 0)
+
+            if revealMap[index[0] + 1][index[1] + 1] == 0 and numberOfBombs == 0 and worldMap[index[0] + 1][index[1] + 1] == 0:
+                revealMap[index[0] + 1][index[1] + 1] = 1
+                revealAdjacent((index[0] + 1, index[1] + 1) , 2)
+    
+    elif round == 2:
+
+        if not rightWallNull: # Middle Right
+            numberOfBombs = checkBombCount((index[0] + 1 , index[1]))
+            if revealMap[index[0] + 1][index[1]] == 0 and worldMap[index[0] + 1][index[1]] == 0:
+                revealMap[index[0] + 1][index[1]] = 1
+
+
+        if  not (topWallNull or rightWallNull): # Top Right
+            numberOfBombs = checkBombCount((index[0] + 1 , index[1] - 1))
+            if revealMap[index[0] + 1][index[1] - 1] == 0 and worldMap[index[0] +1][index[1] - 1] == 0:
+                revealMap[index[0] + 1][index[1] - 1] = 1
+
+        if not topWallNull: # Top Middle
+            numberOfBombs = checkBombCount((index[0] , index[1] - 1))
+            if revealMap[index[0]][index[1] - 1] == 0 and worldMap[index[0]][index[1] - 1] == 0:
+                revealMap[index[0]][index[1] - 1] = 1
+
+        if not (topWallNull or leftWallNull): # Top Left
+            numberOfBombs = checkBombCount((index[0] - 1 , index[1] - 1))
+            if revealMap[index[0] - 1][index[1] - 1] == 0 and worldMap[index[0] - 1][index[1] - 1] == 0:
+                revealMap[index[0] - 1][index[1] - 1] = 1
+
+        if not leftWallNull: # Middle Left
+            numberOfBombs = checkBombCount((index[0] - 1 , index[1]))
+            if revealMap[index[0] - 1][index[1]] == 0 and worldMap[index[0] - 1][index[1]] == 0:
+                revealMap[index[0] - 1][index[1]] = 1
+
+        if not (bottomWallNull or leftWallNull): # Bottom Left
+            numberOfBombs = checkBombCount((index[0] - 1 , index[1] + 1))
+            if revealMap[index[0] - 1][index[1] + 1] == 0 and worldMap[index[0] - 1][index[1] + 1] == 0:
+                revealMap[index[0] - 1][index[1] + 1] = 1
+
+        if not bottomWallNull: # Bottom Middle
+            numberOfBombs = checkBombCount((index[0] , index[1] + 1))
+            if revealMap[index[0]][index[1] + 1] == 0 and worldMap[index[0]][index[1] + 1]:
+                revealMap[index[0]][index[1] + 1] = 1
+
+        if not (bottomWallNull or rightWallNull): # Bottom Right
+            numberOfBombs = checkBombCount((index[0] + 1 , index[1] + 1))
+            if revealMap[index[0] + 1][index[1] + 1] == 0 and worldMap[index[0] + 1][index[1] + 1] == 0:
+                revealMap[index[0] + 1][index[1] + 1] = 1
+                
 
 def checkLoss():
 
