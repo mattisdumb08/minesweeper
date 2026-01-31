@@ -1,7 +1,21 @@
 import pygame as pg
 import time
+import threading
+import map
+
 # Reveal map Key = 1 revealed 0 is unrevealed 2 is a bomb that is revealed 3 is flagged
 pg.init()
+
+numberOfBombsOpened = 0
+
+def checkNumberOfBombsOpen():
+
+    global numberOfBombsOpened
+
+    for yIndex in range(0 , len(map.revealMap)):
+        for xIndex in range(0 , len(map.revealMap[0])):
+            if map.revealMap[yIndex][xIndex] == 2:
+                numberOfBombsOpened += 1
 
 
 running = True
@@ -10,6 +24,23 @@ def shutdown():
    global running
    running = False
 
+def revealAdjacent0():
+    
+    sprite : map.Tile
+
+    for sprite in map.tiles:
+
+        if map.revealMap[sprite.index[0]][sprite.index[1]] == 3:
+            continue
+
+        if map.revealMap[sprite.index[0]][sprite.index[1]] == 1 and map.worldMap[sprite.index[0]][sprite.index[1]] == 0 and map.checkBombCountAlternate(sprite.index) == 0 :
+            map.revealAdjacentAlternate(sprite.index)
+        
+        # elif map.revealMap[sprite.index[0]][sprite.index[1]] == 1 and map.worldMap[sprite.index[0]][sprite.index[1]] == 0 and map.checkFlagCount(sprite.index) != sprite.numberOfBombs:
+        #     map.revealAdjacentAlternate(sprite.index)
+        
+
+
 def main():
 
     global running
@@ -17,13 +48,14 @@ def main():
     window = pg.display
     window.set_caption("Minesweeper")
     window.set_mode((1600 , 900))
+    map.turtleImage.convert_alpha()
     surface = window.get_surface()
 
-    import map
 
     map.randomiseMap(16 , 16)
     map.displayMap(surface)
 
+    lives = 3
 
     while running:
 
@@ -38,6 +70,7 @@ def main():
 
         map.bombs.update(surface)
         map.tiles.update(surface)
+        revealAdjacent0()
 
         window.flip()
 
@@ -45,7 +78,8 @@ def main():
 
         events = pg.event.get()
 
-        # running = map.checkLoss()
+        if checkNumberOfBombsOpen() == lives:
+            running = False
 
         for event in events:
 
@@ -62,8 +96,9 @@ def main():
                         if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 1
                             startTime = time.time()
-                            map.revealAdjacent(sprite.index , 0)
-                            print("f{time.time() - startTime}")
+                            # map.revealAdjacent(sprite.index , 0)
+                            map.revealAdjacentAlternate(sprite.index)
+                            # revealAdjacent0()
                     for sprite in map.bombs:
                         if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 2
