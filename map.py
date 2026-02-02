@@ -283,6 +283,8 @@ def checkBombCount(index : tuple):
 
     return total
 
+checkBombCount = None
+
 def checkBombCountAlternate(index : tuple):
     xIndex = index[1]
     yIndex = index[0]
@@ -464,6 +466,8 @@ def revealAdjacent(index :tuple , round : int | None): # what the fuck is this
             numberOfBombs = checkBombCount((index[0] + 1 , index[1] + 1))
             if revealMap[index[0] + 1][index[1] + 1] == 0 and worldMap[index[0] + 1][index[1] + 1] == 0:
                 revealMap[index[0] + 1][index[1] + 1] = 1
+
+revealAdjacent = None
 
 def revealAdjacentAlternate(index : tuple):
     xIndex = index[1]
