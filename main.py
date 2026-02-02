@@ -8,16 +8,16 @@ pg.init()
 
 window = pg.display
 
-numberOfBombsOpened = 0
-
 def checkNumberOfBombsOpen():
 
-    global numberOfBombsOpened
+    total = 0
 
     for yIndex in range(0 , len(map.revealMap)):
         for xIndex in range(0 , len(map.revealMap[0])):
             if map.revealMap[yIndex][xIndex] == 2:
-                numberOfBombsOpened += 1
+                total += 1
+
+    return 0
 
 
 running = True
@@ -102,7 +102,6 @@ def main():
                     for sprite in map.tiles:
                         if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 1
-                            startTime = time.time()
                             # map.revealAdjacent(sprite.index , 0)
                             map.revealAdjacentAlternate(sprite.index)
                             # revealAdjacent0()
@@ -110,6 +109,8 @@ def main():
                         if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
                             map.revealMap[sprite.index[0]][sprite.index[1]] = 2
                             
+
+
                 if mouses[2]:
 
                     sprite : map.Tile
