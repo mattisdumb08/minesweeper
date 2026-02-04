@@ -32,18 +32,15 @@ def revealAdjacent0(spread : bool , delay : int):
 
     for sprite in map.tiles:
 
-        if map.revealMap[sprite.index[0]][sprite.index[1]] == 3:
-            continue
-
-        if map.revealMap[sprite.index[0]][sprite.index[1]] == 1 and map.worldMap[sprite.index[0]][sprite.index[1]] == 0 and map.checkBombCountAlternate(sprite.index) == 0 :
-
+       if map.worldMap[sprite.index[0]][sprite.index[1]] == 0 and map.revealMap[sprite.index[0]][sprite.index[1]] == 1 and sprite.numberOfBombs == 0:
+            
             if spread:
 
                 pg.time.delay(delay)
 
-                window.flip()
-
             map.revealAdjacentAlternate(sprite.index)
+
+            window.flip()
 
             shouldReveal0 = True
         
@@ -79,26 +76,31 @@ def main():
 
         pg.time.delay(16)
 
+        startTime = time.time()
+
         surface.fill((0 , 0 , 225))
         
         # map.displayMap(surface)
 
+        revealTime = time.time()
         map.bombs.update(surface)
         map.tiles.update(surface)
+        print(time.time() - revealTime)
 
         map.bombs.draw(surface)
         map.tiles.draw(surface)
 
-        window.flip()
+        window.update()
 
         keys = pg.key.get_pressed()
-
         events = pg.event.get()
 
-        if checkNumberOfBombsOpen() == lives:
-            running = False
+        # if checkNumberOfBombsOpen() == lives:
+        #     running = False
         
-        revealAdjacent0(True , 2)
+        revealTime = time.time()
+        # revealAdjacent0(False , 2)
+        print(time.time() - revealTime)
 
         if len(events) !=0:
 
@@ -183,6 +185,19 @@ def main():
 
                         # map.tiles.update(surface)
                         # map.bombs.update(surface)
+                
+                if event.type == pg.KEYDOWN:
+
+                    print("Pressed")
+
+                    match event.key:
+                        
+                        case pg.K_b:
+                            map.revealAll()
+
+                        
+
+        # print(time.time() - startTime)
 
                                 
 

@@ -3,8 +3,13 @@ import random as rndm
 
 pg.font.init()
 
+revealDelay = True
+delayTime = 2
+
 turtleName = "turtle.jpg"
 turtleImage = pg.image.load(turtleName)
+
+turtleRect = turtleImage.get_rect()
 
 text = pg.sysfont.SysFont("Serif" , 16 , True)
 
@@ -83,16 +88,29 @@ class Tile(Segment):
         self.image.fill(colour)
         self.numberImage = None
         self.imageRect = None
+        self.revealed = False
+
+        self.previousRevealed = revealMap[newIndex[0]][newIndex[1]]
+
+        self.image.fill(colour)
+
+        self.scaled = pg.transform.scale(turtleImage , (int(self.width) , int(self.height)))
+
+        if self.numberOfBombs == 0:
+            self.adjacentRevealed = False
 
     def update(self , surface : pg.surface.Surface):
 
         firstIndex = self.index[0]
         secondIndex = self.index[1]
         
-        if revealMap[firstIndex][secondIndex] == 1 and self.numberOfBombs == 0:
+        if self.previousRevealed == revealMap[firstIndex][secondIndex]:
+            return None
+
+        if revealMap[firstIndex][secondIndex] == 1 and self.numberOfBombs == 0 and self.revealed == False:
             self.image.fill((100 , 100 , 100))
 
-        elif revealMap[firstIndex][secondIndex] == 1:
+        elif revealMap[firstIndex][secondIndex] == 1 and self.revealed == False:
 
             self.image.fill((255 , 255 , 255))
 
@@ -108,45 +126,61 @@ class Tile(Segment):
                 self.numberImage.convert()
     
             self.image.blit(self.numberImage , self.imageRect)
-            
-        elif revealMap[firstIndex][secondIndex] == 3:
-            
-            turtleRect = turtleImage.get_rect()
 
-            scaled = pg.transform.scale(turtleImage , (int(self.width) , int(self.height)))
+            self.revealed = True
+            
+        elif revealMap[firstIndex][secondIndex] == 3 and self.revealed == False:
 
             self.image.fill((0 , 0 , 0))
-            self.image.blit(scaled , turtleRect)
+            self.image.blit(self.scaled , turtleRect)
         
         elif revealMap[firstIndex][secondIndex] == 0:
             self.image.fill((255 , 255 , 255))
+
+        if revealMap[self.index[0]][self.index[1]] == 1 and self.numberOfBombs == 0 and not self.adjacentRevealed:
+            
+            if revealDelay:
+
+                pg.time.delay(delayTime)
+
+            revealAdjacentAlternate(self.index)
+
+            tiles.draw(pg.display.get_surface())
+
+        self.previousRevealed = revealMap[firstIndex][secondIndex]
             
 class Bomb(Segment):
     
     def __init__(self, newWidth, newHeight, newCenter, groupToAdd , newIndex , newColour):
         super().__init__(newWidth, newHeight, newCenter, groupToAdd , newIndex)
-
+        self.revealed = False
         self.image.fill(newColour)
+
+        self.previousRevealed = revealMap[newIndex[0]][newIndex[1]]
+
+        self.scaled = pg.transform.scale(turtleImage , (int(self.width) , int(self.height)))
 
     def update(self , surface : pg.surface.Surface):
 
         firstIndex = self.index[0]
         secondIndex = self.index[1]
 
-        if revealMap[firstIndex][secondIndex] == 0:
-            self.image.fill((255 , 255 , 255))
-        elif revealMap[firstIndex][secondIndex] == 2:
-            self.image.fill((100 , 0 , 0))
+        if self.previousRevealed == revealMap[firstIndex][secondIndex]:
+            return None
 
-        elif revealMap[firstIndex][secondIndex] == 3:
+        if revealMap[firstIndex][secondIndex] == 0 and self.revealed == False:
+            self.image.fill((255 , 255 , 255))
+        elif revealMap[firstIndex][secondIndex] == 2 and self.revealed == False:
+            self.image.fill((100 , 0 , 0))
+            self.revealed = True
+
+        elif revealMap[firstIndex][secondIndex] == 3 and self.revealed == False:
             # self.image.fill((0 , 0 , 100))
             self.image.fill((255 , 255 , 255))
 
-            turtleRect = turtleImage.get_rect()
-
-            scaled = pg.transform.scale(turtleImage , (int(self.width) , int(self.height)))
-
-            self.image.blit(scaled , turtleRect)
+            self.image.blit(self.scaled , turtleRect)
+        
+        self.previousRevealed = revealMap[firstIndex][secondIndex]
 
 
 rows = len(worldMap)
@@ -496,6 +530,18 @@ def revealAdjacentAlternate(index : tuple):
 
                 # if worldMap[newYIndex][newXIndex] == 0 and checkBombCountAlternate((yIndex , xIndex)) == 0:
                 #     revealAdjacentAlternate((newYIndex , newXIndex))
+
+def revealAll():
+    for sprite in bombs:
+        firstIndex = sprite.index[0]
+        secondIndex = sprite.index[1]
+
+        revealMap[firstIndex][secondIndex] = 2
+    for sprite in tiles:
+        firstIndex = sprite.index[0]
+        secondIndex = sprite.index[1]
+
+        revealMap[firstIndex][secondIndex] = 1
 
 def checkLoss():
 
