@@ -262,7 +262,7 @@ def randomiseMap(rows , columns): # Uses dimensions
     worldMap.clear() # Remove all sprites to save memory
     revealMap.clear()
 
-    chance = 15 # Out of 100
+    chance = 20 # Out of 100
 
     for i in range(0 , rows):
         worldMap.append([])
