@@ -2,6 +2,7 @@ import pygame as pg
 import time
 import threading
 import map
+import menu
 
 # Reveal map Key = 1 revealed 0 is unrevealed 2 is a bomb that is revealed 3 is flagged
 pg.init()
@@ -49,6 +50,44 @@ def revealAdjacent0(spread : bool , delay : int):
         
 shouldReveal0 = False
 
+def lossScreen():
+
+    displaying = True
+
+    surface = window.get_surface()
+
+    rendered = False
+
+    while displaying:
+        if rendered == False:
+
+            surface.fill((0 , 0 , 0))
+
+            text = menu.serifFont.render("Game over!" , True , (255 , 255 , 255 , 0))
+            text.convert_alpha()
+            textRect = text.get_rect()
+            textRect.center = (surface.get_size()[0] / 2 - textRect.width / 2 , surface.get_size()[1] / 2 - textRect.height / 2)
+
+            surface.blit(text , textRect.center)
+
+        window.update()
+        
+        events = pg.event.get()
+
+        for event in events:
+
+            if event.type == pg.QUIT:
+                return False
+            if event.type == pg.KEYDOWN:
+                keys = pg.key.get_pressed()
+
+                if keys[pg.K_r]:
+                    return True
+                if keys[pg.K_q]:
+                    return False
+
+        
+
 
 def main():
 
@@ -62,6 +101,7 @@ def main():
     map.turtleImage.convert_alpha()
     surface = window.get_surface()
 
+    livesDisplay = menu.LivesDisplay(3)
 
     map.randomiseMap(16 , 16)
     map.displayMap(surface)
@@ -71,6 +111,7 @@ def main():
     lives = 3
 
     shouldReveal0 = False
+    firstClick = True
 
     while running:
 
@@ -82,25 +123,41 @@ def main():
         
         # map.displayMap(surface)
 
-        revealTime = time.time()
+        # revealTime = time.time()
         map.bombs.update(surface)
         map.tiles.update(surface)
-        print(time.time() - revealTime)
+        
+        menu.menuElements.update(surface)
+
+        # print(time.time() - revealTime)
 
         map.bombs.draw(surface)
         map.tiles.draw(surface)
+        menu.menuElements.draw(surface)
 
         window.update()
 
         keys = pg.key.get_pressed()
         events = pg.event.get()
 
-        # if checkNumberOfBombsOpen() == lives:
-        #     running = False
+        lives = 3 - checkNumberOfBombsOpen()
+
+        livesDisplay.setLives(lives)
+
+        if lives <= 0:
+
+            keepRunning = lossScreen()
+
+            if keepRunning == True:
+                firstClick = True
+                map.randomiseMap(16 , 16)
+                map.displayMap(surface)
+            else:
+                running = False
         
-        revealTime = time.time()
-        # revealAdjacent0(False , 2)
-        print(time.time() - revealTime)
+        # revealTime = time.time()
+        # # revealAdjacent0(False , 2)
+        # print(time.time() - revealTime)
 
         if len(events) !=0:
 
@@ -158,8 +215,29 @@ def main():
                                 map.revealAdjacentAlternate(sprite.index)
                                 
                         for sprite in map.bombs:
-                            if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
+                            if firstClick == True and sprite.rect.collidepoint(location[0] , location[1]):
+                                map.worldMap[sprite.index[0]][sprite.index[1]] = 0
+                                map.revealMap[sprite.index[0]][sprite.index[1]] = 1
+                                center = sprite.getCenter()
+                                height = sprite.getHeight()
+                                width = sprite.getWidth()
+                                index = sprite.index
+
+                                newTile = map.Tile(width , height , center , map.tiles , index , (255 , 255 , 255))
+                                bombCount = map.checkBombCountAlternate(index)
+                                newTile.numberOfBombs = bombCount
+                                newTile.previousRevealed = -1
+
+                                del sprite
+                         
+                                # map.displayMap(surface)
+                                firstClick = False
+
+                                continue
+
+                            if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]) and firstClick == False:
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 2
+                            
 
                         # map.tiles.update(surface)
                         # map.bombs.update(surface)
@@ -178,6 +256,7 @@ def main():
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 0
 
                         for sprite in map.bombs:
+                            
                             if map.revealMap[sprite.index[0]][sprite.index[1]] == 0 and sprite.rect.collidepoint(location[0] , location[1]):
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 3
                             elif map.revealMap[sprite.index[0]][sprite.index[1]] == 3 and sprite.rect.collidepoint(location[0] , location[1]):
