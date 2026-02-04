@@ -85,11 +85,16 @@ class Tile(Segment):
         self.imageRect = None
 
     def update(self , surface : pg.surface.Surface):
+
+        firstIndex = self.index[0]
+        secondIndex = self.index[1]
         
-        if revealMap[self.index[0]][self.index[1]] == 1 and self.numberOfBombs == 0:
+        if revealMap[firstIndex][secondIndex] == 1 and self.numberOfBombs == 0:
             self.image.fill((100 , 100 , 100))
 
-        elif revealMap[self.index[0]][self.index[1]] == 1:
+        elif revealMap[firstIndex][secondIndex] == 1:
+
+            self.image.fill((255 , 255 , 255))
 
             self.image.fill((100 , 100 , 100))
 
@@ -104,7 +109,7 @@ class Tile(Segment):
     
             self.image.blit(self.numberImage , self.imageRect)
             
-        elif revealMap[self.index[0]][self.index[1]] == 3:
+        elif revealMap[firstIndex][secondIndex] == 3:
             
             turtleRect = turtleImage.get_rect()
 
@@ -113,7 +118,7 @@ class Tile(Segment):
             self.image.fill((0 , 0 , 0))
             self.image.blit(scaled , turtleRect)
         
-        elif revealMap[self.index[0]][self.index[1]] == 0:
+        elif revealMap[firstIndex][secondIndex] == 0:
             self.image.fill((255 , 255 , 255))
             
 class Bomb(Segment):
@@ -125,12 +130,15 @@ class Bomb(Segment):
 
     def update(self , surface : pg.surface.Surface):
 
-        if revealMap[self.index[0]][self.index[1]] == 0:
+        firstIndex = self.index[0]
+        secondIndex = self.index[1]
+
+        if revealMap[firstIndex][secondIndex] == 0:
             self.image.fill((255 , 255 , 255))
-        elif revealMap[self.index[0]][self.index[1]] == 2:
+        elif revealMap[firstIndex][secondIndex] == 2:
             self.image.fill((100 , 0 , 0))
 
-        elif revealMap[self.index[0]][self.index[1]] == 3:
+        elif revealMap[firstIndex][secondIndex] == 3:
             # self.image.fill((0 , 0 , 100))
             self.image.fill((255 , 255 , 255))
 
