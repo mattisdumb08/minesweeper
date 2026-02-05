@@ -111,12 +111,12 @@ def main():
 
     livesDisplay = menu.LivesDisplay(3)
 
-    map.randomiseMap(16 , 16)
-    map.displayMap(surface)
+    map.randomiseMap(16 , 16) # Generate the map in the given dimensions and assign bombs based on a chance out of 100
+    map.displayMap(surface) # Create all of the sprites and draw to the screen
 
-    map.turtleImage.convert_alpha()
+    map.turtleImage.convert_alpha() # Make blits faster for image in map module
 
-    lives = 3
+    lives = 3 # Number of lives to begin with
 
     shouldReveal0 = False
     firstClick = True
@@ -127,11 +127,10 @@ def main():
 
         startTime = time.time()
 
-        surface.fill((0 , 0 , 225))
-        
-        # map.displayMap(surface)
+        surface.fill((0 , 0 , 225)) # reset the window
 
-        # revealTime = time.time()
+        # Updating all sprites in the game
+
         map.bombs.update(surface)
         map.tiles.update(surface)
         
@@ -139,9 +138,13 @@ def main():
 
         # print(time.time() - revealTime)
 
+        # draw all of the sprites
+
         map.bombs.draw(surface)
         map.tiles.draw(surface)
         menu.menuElements.draw(surface)
+
+        # display changes
 
         window.update()
 
@@ -152,16 +155,16 @@ def main():
 
         livesDisplay.setLives(lives)
 
-        # if lives <= 0:
+        if lives <= 0:
 
-        #     keepRunning = lossScreen()
+            keepRunning = lossScreen()
 
-        #     if keepRunning == True:
-        #         firstClick = True
-        #         map.randomiseMap(16 , 16)
-        #         map.displayMap(surface)
-        #     else:
-        #         running = False
+            if keepRunning == True:
+                firstClick = True
+                map.randomiseMap(16 , 16)
+                map.displayMap(surface)
+            else:
+                running = False
         
         # revealTime = time.time()
         # # revealAdjacent0(False , 2)
@@ -183,49 +186,15 @@ def main():
                         for sprite in map.tiles:
                             if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 1
-
-                                # firstIndex = sprite.index[0]
-                                # secondIndex = sprite.index[1]
-                                
-                                # if map.revealMap[firstIndex][secondIndex] == 1 and sprite.numberOfBombs == 0:
-                                #     sprite.image.fill((100 , 100 , 100))
-
-                                # elif map.revealMap[firstIndex][secondIndex] == 1:
-
-                                #     sprite.image.fill((255 , 255 , 255))
-
-                                #     sprite.image.fill((100 , 100 , 100))
-
-                                #     imageRect : pg.Rect
-
-                                #     if sprite.numberImage == None:
-
-                                #         sprite.numberImage = map.text.render(str(sprite.numberOfBombs) , True , (0 , 0 , 0))
-                                #         sprite.imageRect = sprite.numberImage.get_rect()
-                                #         sprite.imageRect.center = ((sprite.getWidth() / 2) , (sprite.getHeight() / 2))
-                                #         sprite.numberImage.convert()
-                            
-                                #     sprite.image.blit(sprite.numberImage , sprite.imageRect)
-                                    
-                                # elif map.revealMap[firstIndex][secondIndex] == 3:
-                                    
-                                #     turtleRect = map.turtleImage.get_rect()
-
-                                #     scaled = pg.transform.scale(map.turtleImage , (int(sprite.width) , int(sprite.height)))
-
-                                #     sprite.image.fill((0 , 0 , 0))
-                                #     sprite.image.blit(scaled , turtleRect)
-                                
-                                # elif map.revealMap[firstIndex][secondIndex] == 0:
-                                #     sprite.image.fill((255 , 255 , 255))
-
-                                # map.revealAdjacent(sprite.index , 0)
                                 print(sprite.numberOfBombs)
                                 map.revealAdjacentAlternate(sprite.index)
                                 
                         for sprite in map.bombs:
                             
                             if firstClick == True and sprite.rect.collidepoint(location[0] , location[1]):
+
+                                print("firstClick")
+
                                 map.worldMap[sprite.index[0]][sprite.index[1]] = 0
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 1
                                 center = sprite.getCenter()
@@ -241,7 +210,6 @@ def main():
                                 del sprite
                          
                                 map.displayMap(surface)
-                                firstClick = False
 
                                 continue
 
@@ -252,6 +220,8 @@ def main():
                         # map.tiles.update(surface)
                         # map.bombs.update(surface)
                         shouldReveal0 = True
+                        if firstClick == True:
+                            firstClick = False
                                 
 
 
