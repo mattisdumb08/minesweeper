@@ -59,6 +59,7 @@ def lossScreen():
     rendered = False
 
     while displaying:
+
         if rendered == False:
 
             surface.fill((0 , 0 , 0))
@@ -69,6 +70,13 @@ def lossScreen():
             textRect.center = (surface.get_size()[0] / 2 - textRect.width / 2 , surface.get_size()[1] / 2 - textRect.height / 2)
 
             surface.blit(text , textRect.center)
+
+            playAgainText = menu.serifFont.render("Press R to play again or Q to quit." , True , (255 , 255 ,255))
+            playAgainTextRect = playAgainText.get_rect()
+            playAgainTextRect.center = (surface.get_size()[0] / 2 , surface.get_size()[1] / 3)
+            playAgainText.convert_alpha()
+
+            surface.blit(playAgainText , playAgainTextRect)
 
         window.update()
         
@@ -144,16 +152,16 @@ def main():
 
         livesDisplay.setLives(lives)
 
-        if lives <= 0:
+        # if lives <= 0:
 
-            keepRunning = lossScreen()
+        #     keepRunning = lossScreen()
 
-            if keepRunning == True:
-                firstClick = True
-                map.randomiseMap(16 , 16)
-                map.displayMap(surface)
-            else:
-                running = False
+        #     if keepRunning == True:
+        #         firstClick = True
+        #         map.randomiseMap(16 , 16)
+        #         map.displayMap(surface)
+        #     else:
+        #         running = False
         
         # revealTime = time.time()
         # # revealAdjacent0(False , 2)
@@ -212,6 +220,7 @@ def main():
                                 #     sprite.image.fill((255 , 255 , 255))
 
                                 # map.revealAdjacent(sprite.index , 0)
+                                print(sprite.numberOfBombs)
                                 map.revealAdjacentAlternate(sprite.index)
                                 
                         for sprite in map.bombs:
@@ -230,7 +239,7 @@ def main():
 
                                 del sprite
                          
-                                # map.displayMap(surface)
+                                map.displayMap(surface)
                                 firstClick = False
 
                                 continue
