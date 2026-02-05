@@ -38,6 +38,6 @@ class LivesDisplay(pg.sprite.Sprite):
             return None
         self.text = serifFont.render("Lives:" + str(self.numberOfLives) , True , (255 , 255 , 255))
         self.text.convert_alpha()
-
+        self.image = pg.surface.Surface(serifFont.size("Lives:" + str(self.numberOfLives)) , pg.SRCALPHA)
         self.image.fill((255 , 255 , 255 , 0))
         self.image.blit(self.text , (0 ,0))
