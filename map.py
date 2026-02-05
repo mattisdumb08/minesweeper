@@ -112,11 +112,17 @@ class Tile(Segment):
             return None
         
         if numberOfBombCurrent != self.previousBombNumber:
+                self.image.fill((255 , 255 , 255))
+                self.image.fill((100 , 100 , 100))
                 self.numberImage = text.render(str(self.numberOfBombs) , True , (0 , 0 , 0))
                 self.imageRect = self.numberImage.get_rect()
                 self.imageRect.center = ((self.getWidth() / 2) , (self.getHeight() / 2))
                 self.numberImage.convert()
-                self.image.blit(self.numberImage , self.imageRect)            
+                self.image.blit(self.numberImage , self.imageRect)
+
+                self.numberOfBombs = checkBombCountAlternate(self.getIndex())          
+
+        self.numberOfBombs = checkBombCountAlternate(self.getIndex())
 
         if revealMap[firstIndex][secondIndex] == 1 and self.numberOfBombs == 0 and self.revealed == False:
             self.image.fill((100 , 100 , 100))
