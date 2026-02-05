@@ -90,6 +90,8 @@ class Tile(Segment):
         self.imageRect = None
         self.revealed = False
 
+        self.previousBombNumber = -321
+
         self.previousRevealed = revealMap[newIndex[0]][newIndex[1]]
 
         self.image.fill(colour)
@@ -104,8 +106,17 @@ class Tile(Segment):
         firstIndex = self.index[0]
         secondIndex = self.index[1]
         
+        numberOfBombCurrent = checkBombCountAlternate(self.getIndex())
+
         if self.previousRevealed == revealMap[firstIndex][secondIndex]:
             return None
+        
+        if numberOfBombCurrent != self.previousBombNumber:
+                self.numberImage = text.render(str(self.numberOfBombs) , True , (0 , 0 , 0))
+                self.imageRect = self.numberImage.get_rect()
+                self.imageRect.center = ((self.getWidth() / 2) , (self.getHeight() / 2))
+                self.numberImage.convert()
+                self.image.blit(self.numberImage , self.imageRect)            
 
         if revealMap[firstIndex][secondIndex] == 1 and self.numberOfBombs == 0 and self.revealed == False:
             self.image.fill((100 , 100 , 100))
@@ -148,6 +159,7 @@ class Tile(Segment):
             tiles.draw(pg.display.get_surface())
 
         self.previousRevealed = revealMap[firstIndex][secondIndex]
+        self.previousBombNumber = numberOfBombCurrent
             
 class Bomb(Segment):
     
