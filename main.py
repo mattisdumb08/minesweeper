@@ -224,6 +224,7 @@ def main():
                                 map.revealAdjacentAlternate(sprite.index)
                                 
                         for sprite in map.bombs:
+                            
                             if firstClick == True and sprite.rect.collidepoint(location[0] , location[1]):
                                 map.worldMap[sprite.index[0]][sprite.index[1]] = 0
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 1
