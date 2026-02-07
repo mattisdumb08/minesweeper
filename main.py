@@ -184,28 +184,33 @@ def main():
                     if mouses[0]:
 
                         for sprite in map.tiles:
-                            if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]):
+                            
+                            clicked = sprite.rect.collidepoint(location[0] , location[1])
+
+                            if clicked == False:
+                                continue
+
+                            if map.revealMap[sprite.index[0]][sprite.index[1]] != 3:
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 1
-                                print(sprite.numberOfBombs)
+
+                            if sprite.numberOfBombs == 0:
                                 map.revealAdjacentAlternate(sprite.index)
+                            
+                            if sprite.flagCount + sprite.revealedAdjacentBombs == sprite.numberOfBombs:
+                                map.revealTypeless(sprite.index)
+
+                            # if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and 
                                 
                         for sprite in map.bombs:
-                            
-                            if firstClick == True and sprite.rect.collidepoint(location[0] , location[1]):
 
-                                print("firstClick")
+                            clicked = sprite.rect.collidepoint(location[0] , location[1])
+                            
+                            if firstClick == True and clicked:
 
                                 map.worldMap[sprite.index[0]][sprite.index[1]] = 0
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 1
-                                center = sprite.getCenter()
-                                height = sprite.getHeight()
-                                width = sprite.getWidth()
-                                index = sprite.index
 
-                                newTile = map.Tile(width , height , center , map.tiles , index , (255 , 255 , 255))
-                                bombCount = map.checkBombCountAlternate(index)
-                                newTile.numberOfBombs = bombCount
-                                newTile.previousRevealed = -1
+                                map.revealAdjacentAlternate(sprite.index)
 
                                 del sprite
                          
@@ -213,7 +218,7 @@ def main():
 
                                 continue
 
-                            if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and sprite.rect.collidepoint(location[0] , location[1]) and firstClick == False:
+                            if map.revealMap[sprite.index[0]][sprite.index[1]] != 3 and clicked and firstClick == False:
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 2
                             
 
