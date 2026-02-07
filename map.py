@@ -91,12 +91,15 @@ class Tile(Segment):
         self.revealed = False
 
         self.previousBombNumber = -321
-
-        self.previousRevealed = revealMap[newIndex[0]][newIndex[1]]
+        self.previousFlagCount = -3
+        self.previousRevealed = -32
 
         self.image.fill(colour)
 
         self.scaled = pg.transform.scale(turtleImage , (int(self.width) , int(self.height)))
+
+        self.flagCount = checkFlagCount(newIndex)
+        self.revealedAdjacentBombs = 0
 
         if self.numberOfBombs == 0:
             self.adjacentRevealed = False
@@ -107,6 +110,8 @@ class Tile(Segment):
         secondIndex = self.index[1]
         
         numberOfBombCurrent = checkBombCountAlternate(self.getIndex())
+        self.flagCount = checkFlagCount(self.index)
+        self.revealedAdjacentBombs = checkRevealedAdjacentBombs(self.index)
 
         if self.previousRevealed == revealMap[firstIndex][secondIndex]:
             return None
@@ -154,7 +159,7 @@ class Tile(Segment):
         elif revealMap[firstIndex][secondIndex] == 0:
             self.image.fill((255 , 255 , 255))
 
-        if revealMap[self.index[0]][self.index[1]] == 1 and self.numberOfBombs == 0 and not self.adjacentRevealed:
+        if revealMap[self.index[0]][self.index[1]] == 1 and self.numberOfBombs == 0:
             
             if revealDelay:
 
@@ -163,6 +168,9 @@ class Tile(Segment):
             revealAdjacentAlternate(self.index)
 
             tiles.draw(pg.display.get_surface())
+
+        if self.flagCount != self.previousFlagCount:
+            self.previousFlagCount = self.flagCount
 
         self.previousRevealed = revealMap[firstIndex][secondIndex]
         self.previousBombNumber = numberOfBombCurrent
@@ -381,7 +389,26 @@ def checkFlagCount(index : tuple):
                 if revealMap[yIndex + dy][xIndex + dx] == 3:
                     total += 1
     
-    return total   
+    return total 
+
+def checkRevealedAdjacentBombs(index):
+    xIndex = index[1]
+    yIndex = index[0]
+
+    total = 0
+
+    for dx in [-1 , 0 , 1]:
+        for dy in [-1 ,  0 , 1]:
+
+            if dx == 0 and dy == 0:
+                continue
+
+            elif 0 <= xIndex + dx < len(revealMap[0]) and 0 <= yIndex + dy < len(revealMap):
+
+                if revealMap[yIndex + dy][xIndex + dx] == 2:
+                    total += 1
+    
+    return total
 
 def revealAdjacent(index :tuple , round : int | None): # what the fuck is this
 
@@ -543,11 +570,31 @@ def revealAdjacentAlternate(index : tuple):
 
             if 0 <= newXIndex < len(worldMap[0]) and 0 <= newYIndex < len(worldMap):
 
-                if worldMap[newYIndex][newXIndex] == 0 and revealMap[newYIndex][newXIndex] == 0 and checkBombCountAlternate(index) == 0:
+                if worldMap[newYIndex][newXIndex] == 0 and revealMap[newYIndex][newXIndex] == 0:
                     revealMap[newYIndex][newXIndex] = 1
 
                 # if worldMap[newYIndex][newXIndex] == 0 and checkBombCountAlternate((yIndex , xIndex)) == 0:
                 #     revealAdjacentAlternate((newYIndex , newXIndex))
+
+def revealTypeless(index : tuple):
+    xIndex = index[1]
+    yIndex = index[0]
+
+    for dx in [-1 , 0 , 1]:
+        for dy in [-1 , 0 , 1]:
+            if dx == 0 and dy == 0:
+                continue
+            
+            newXIndex = xIndex + dx
+            newYIndex = yIndex + dy
+
+            if 0 <= newXIndex < len(worldMap[0]) and 0 <= newYIndex < len(worldMap):
+
+                if revealMap[newYIndex][newXIndex] == 0:
+                    if worldMap[newYIndex][newXIndex] == 0:
+                        revealMap[newYIndex][newXIndex] = 1
+                    elif worldMap[newYIndex][newXIndex] == 1:
+                        revealMap[newYIndex][newXIndex] = 2
 
 def revealAll():
     for sprite in bombs:
