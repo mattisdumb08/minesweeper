@@ -3,6 +3,7 @@ import time
 import threading
 import map
 import menu
+import sound
 
 # Reveal map Key = 1 revealed 0 is unrevealed 2 is a bomb that is revealed 3 is flagged
 pg.init()
@@ -42,14 +43,10 @@ def revealAdjacent0(spread : bool , delay : int):
             map.revealAdjacentAlternate(sprite.index)
 
             window.flip()
-
-            shouldReveal0 = True
         
         # elif map.revealMap[sprite.index[0]][sprite.index[1]] == 1 and map.worldMap[sprite.index[0]][sprite.index[1]] == 0 and map.checkFlagCount(sprite.index) != sprite.numberOfBombs:
         #     map.revealAdjacentAlternate(sprite.index)
         
-shouldReveal0 = False
-
 def lossScreen():
 
     displaying = True
@@ -99,8 +96,6 @@ def lossScreen():
 
 def main():
 
-    global shouldReveal0
-
     global running
 
     window = pg.display
@@ -114,12 +109,17 @@ def main():
     map.randomiseMap(16 , 16) # Generate the map in the given dimensions and assign bombs based on a chance out of 100
     map.displayMap(surface) # Create all of the sprites and draw to the screen
 
+    print(map.totalNumberOfBombs)
+
     map.turtleImage.convert_alpha() # Make blits faster for image in map module
 
     lives = 3 # Number of lives to begin with
 
-    shouldReveal0 = False
     firstClick = True
+
+    flags = 0
+
+    won = False
 
     while running:
 
@@ -138,6 +138,16 @@ def main():
 
         # print(time.time() - revealTime)
 
+        # Play all sounds queued
+
+        soundEffectToPlay = sound.soundEffectsChannel.get_queue()
+
+        while soundEffectToPlay != None:
+
+            soundEffectToPlay.play()
+
+            soundEffectToPlay = sound.soundEffectsChannel.get_queue()
+
         # draw all of the sprites
 
         map.bombs.draw(surface)
@@ -151,7 +161,10 @@ def main():
         keys = pg.key.get_pressed()
         events = pg.event.get()
 
-        lives = 3 - checkNumberOfBombsOpen()
+        numberOfOpenBombs = checkNumberOfBombsOpen()
+        flags = map.checkNumberOfCorrectFlags()
+
+        lives = 3 - numberOfOpenBombs
 
         livesDisplay.setLives(lives)
 
@@ -165,6 +178,12 @@ def main():
                 map.displayMap(surface)
             else:
                 running = False
+
+        print(numberOfOpenBombs + flags)
+        
+        if numberOfOpenBombs + flags == map.totalNumberOfBombs and won != True:
+            sound.playYippee()
+            won = True
         
         # revealTime = time.time()
         # # revealAdjacent0(False , 2)
@@ -224,7 +243,6 @@ def main():
 
                         # map.tiles.update(surface)
                         # map.bombs.update(surface)
-                        shouldReveal0 = True
                         if firstClick == True:
                             firstClick = False
                                 
@@ -237,15 +255,19 @@ def main():
                         for sprite in map.tiles:
                             if map.revealMap[sprite.index[0]][sprite.index[1]] == 0 and sprite.rect.collidepoint(location[0] , location[1]):
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 3
+                                flags += 1
                             elif map.revealMap[sprite.index[0]][sprite.index[1]] == 3 and sprite.rect.collidepoint(location[0] , location[1]):
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 0
+                                flags -= 1
 
                         for sprite in map.bombs:
                             
                             if map.revealMap[sprite.index[0]][sprite.index[1]] == 0 and sprite.rect.collidepoint(location[0] , location[1]):
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 3
+                                flags += 1
                             elif map.revealMap[sprite.index[0]][sprite.index[1]] == 3 and sprite.rect.collidepoint(location[0] , location[1]):
                                 map.revealMap[sprite.index[0]][sprite.index[1]] = 0
+                                flags -= 1
 
                         # map.tiles.update(surface)
                         # map.bombs.update(surface)
