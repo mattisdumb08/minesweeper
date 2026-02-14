@@ -35,6 +35,8 @@ revealMap = [] # 0 unrevealed 1 reveled
 tiles = pg.sprite.Group()
 bombs = pg.sprite.Group()
 
+totalNumberOfBombs = 0
+
 class Segment(pg.sprite.Sprite):
 
     def __init__(self , newWidth , newHeight , newCenter , groupToAdd , newIndex : tuple ):
@@ -288,7 +290,10 @@ def randomiseMap(rows , columns): # Uses dimensions
     worldMap.clear() # Remove all sprites to save memory
     revealMap.clear()
 
-    chance = 20 # Out of 100
+    global totalNumberOfBombs
+    totalNumberOfBombs = 0
+
+    chance = 1 # Out of 100
 
     for i in range(0 , rows):
         worldMap.append([])
@@ -299,6 +304,7 @@ def randomiseMap(rows , columns): # Uses dimensions
 
             if 0 <= randomNumber <= chance:
                 appendNumber = 1
+                totalNumberOfBombs += 1
 
             worldMap[i].append(appendNumber)
 
@@ -617,3 +623,15 @@ def checkLoss():
             return False
     
     return True
+
+def checkNumberOfCorrectFlags():
+
+    total = 0
+
+    for index in range(0 , len(worldMap)):
+        for k in range(0 , len(worldMap[0])):
+
+            if worldMap[index][k] == 1 and revealMap[index][k] == 3:
+                total += 1
+    
+    return total
