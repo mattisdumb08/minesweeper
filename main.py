@@ -140,13 +140,7 @@ def main():
 
         # Play all sounds queued
 
-        soundEffectToPlay = sound.soundEffectsChannel.get_queue()
-
-        while soundEffectToPlay != None:
-
-            soundEffectToPlay.play()
-
-            soundEffectToPlay = sound.soundEffectsChannel.get_queue()
+        sound.soundEffectsChannel.playAll()
 
         # draw all of the sprites
 
@@ -178,8 +172,6 @@ def main():
                 map.displayMap(surface)
             else:
                 running = False
-
-        print(numberOfOpenBombs + flags)
         
         if numberOfOpenBombs + flags == map.totalNumberOfBombs and won != True:
             sound.playYippee()
