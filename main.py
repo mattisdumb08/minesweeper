@@ -89,9 +89,46 @@ def lossScreen():
                 if keys[pg.K_r]:
                     return True
                 if keys[pg.K_q]:
-                    return False
+                    return False    
 
+def winScreen():
+
+    displaying = True
+
+    surface = window.get_surface()
+
+    rendered = False
+
+    while displaying:
+
+        if rendered == False:
+
+            surface.fill((0 , 200 , 0))
+
+            winText = menu.serifFont.render("you win!!" , True , (0 , 0 ,0))
+            winText.convert_alpha()
+            winTextRect = winText.get_rect()
+            winTextRect.center = (surface.get_size()[0] / 2, surface.get_size()[1] / 2 - winTextRect.size[1] / 2)
+
+            surface.blit(winText , winTextRect)
         
+        window.update()
+
+        events = pg.event.get()
+
+        keys = pg.key.get_pressed()
+
+        for event in events:
+
+            if event.type == pg.QUIT:
+                return False
+
+        match keys:
+
+            case pg.K_r:
+                print("R pressed")
+
+
 
 
 def main():
@@ -173,9 +210,11 @@ def main():
             else:
                 running = False
         
-        if numberOfOpenBombs + flags == map.totalNumberOfBombs and won != True:
+        elif numberOfOpenBombs + flags == map.totalNumberOfBombs and won != True:
             sound.playYippee()
+            running = winScreen()
             won = True
+        
         
         # revealTime = time.time()
         # # revealAdjacent0(False , 2)
